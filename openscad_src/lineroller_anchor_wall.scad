@@ -8,6 +8,7 @@ track_l = l;
 head_r = 3.5;
 screw_r = 1.5;
 post_r = 2;
+receiver_r = post_r + 0.18;
 tower_h = 17 + b623_vgroove_big_r;
 x_len = Depth_of_lineroller_base-4; // For the two "wings" with tracks for screws
 y_extra = -2.0; // For the two "wings" with tracks for screws
@@ -15,9 +16,12 @@ y_extra = -2.0; // For the two "wings" with tracks for screws
 
 translate([0,-Depth_of_lineroller_base-5,0])
   mirror([0,1,0])
-    lineroller_anchor();
+    lineroller_anchor(
+);
+
 lineroller_anchor();
 module lineroller_anchor(){
+
   // Module lineroller_ABC_winch() defined in lineroller_ABC_winch.scad
   lineroller_ABC_winch(edge_start=0, edge_stop=120,
                        base_th = base_th,
@@ -59,6 +63,7 @@ module lineroller_anchor(){
     }
   }
 
+  
   base_mid(base_th = base_th);
   module base_mid(base_th, l = l){
     difference(){
@@ -66,27 +71,8 @@ module lineroller_anchor(){
         translate([l, Depth_of_lineroller_base,0])
         rotate([0,0,180])
         rounded_cube2([l, Depth_of_lineroller_base, base_th], Lineroller_base_r, $fn=10*4);
-      //slot_for_countersunk_screw(l);
         translate([Depth_of_lineroller_base / 2, 0, -0.01])
-        cylinder(d=post_r * 2 + 0.1, h=base_th + 0.02, $fn=4*10);
-    }
-  }
-/*
-  translate([l-x_len,Depth_of_lineroller_base+y_extra-0.01,0]){
-    base_wing(base_th = base_th, x_len = x_len, y_extra = y_extra);
-    translate([-x_len,-Depth_of_lineroller_base/2-y_extra,0])
-    rotate([0,0,90])
-    inner_round_corner(r=2, h=base_th, $fn=4*7);
-  }
-*/
-  module base_wing(base_th, x_len, y_extra = y_extra){
-    difference(){
-      translate([-x_len, -Depth_of_lineroller_base/2, 0])
-        translate([x_len/2, Depth_of_lineroller_base/2, 0])
-        rotate([0,0,90])
-        translate([-Depth_of_lineroller_base/2-y_extra, -x_len/2, 0])
-        right_rounded_cube2([Depth_of_lineroller_base+y_extra, x_len, base_th], Lineroller_base_r, $fn=10*4);
-      slot_for_countersunk_screw(x_len);
+        cylinder(d=receiver_r * 2, h=base_th + 0.02, $fn=4*10);
     }
   }
 
@@ -119,11 +105,37 @@ module lineroller_anchor(){
     }
   }
   
+  module support_rectangle(v, support_width=0.4, lattice_spacing_goal=2) {
+    length=v[0];
+    width=v[1];
+    height=v[2];
+    
+    num_supports = floor(width / lattice_spacing_goal);
+    lattice_spacing = width / num_supports;
+    union() {
+      for(i=[0:num_supports]) {
+        if (i > 0) {
+            translate([0, lattice_spacing * i - support_width, 0])
+            cube([height, support_width, length]);
+        }
+        if (i % 2 == 0 && i < num_supports) {
+            translate([0, lattice_spacing * i - support_width, 0])
+            cube([height, lattice_spacing, support_width ]);
+        } else if (i < num_supports) {
+            translate([0, lattice_spacing * i - support_width, length - support_width])
+            cube([height, lattice_spacing, support_width ]);
+        }
+      }
+    }
+  }
+    
+  
   //Wall mount follows
   wall_mount();
   module wall_mount(){
       d = Depth_of_lineroller_base;
       length_shelf = 2 * l / 3;
+      offset_post = length_shelf * 7/12;
       
       //translate([l/2 + post_r + 3.6, 0, 0])
       rotate([0, 90, 0])
@@ -146,8 +158,14 @@ module lineroller_anchor(){
                 rounded_cube2([d, length_shelf + base_th, base_th], Lineroller_base_r, $fn=10*4);
                   
                 //post
-                translate([-length_shelf * 7/12, 0, -base_th])
+                translate([-offset_post, 0, -base_th])
                 cylinder(d=post_r * 2, h=base_th, $fn=10*4);
+                
+                                        
+                //post lattice
+                translate([0, -post_r /2, -base_th + 0.5])
+                rotate([90, 0, 180])
+                support_rectangle([post_r, base_th - 0.5, offset_post - post_r - 0.1]);
                 
                 //rounded support (bottom)
                 translate([0, -d/2, -2 * base_th])
@@ -158,6 +176,7 @@ module lineroller_anchor(){
             translate([-l / 2, 0, -base_th])
             slot_for_countersunk_screw(l);
         }
+
   }
 
 }
