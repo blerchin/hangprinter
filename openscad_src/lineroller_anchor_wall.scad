@@ -68,7 +68,7 @@ module lineroller_anchor(){
         rounded_cube2([l, Depth_of_lineroller_base, base_th], Lineroller_base_r, $fn=10*4);
       //slot_for_countersunk_screw(l);
         translate([Depth_of_lineroller_base / 2, 0, -0.01])
-        cylinder(d=post_r * 2 + 0.1, h=base_th - .5, $fn=4*10);
+        cylinder(d=post_r * 2 + 0.1, h=base_th + 0.02, $fn=4*10);
     }
   }
 /*
@@ -128,33 +128,36 @@ module lineroller_anchor(){
       //translate([l/2 + post_r + 3.6, 0, 0])
       rotate([0, 90, 0])
       translate([-base_th, 0, -l])
-      union() {
-        //wall fixture
-        translate([0, -d / 2, 0])
-        rotate([0, 90, 0])
-        rounded_cube2([l, d, base_th], Lineroller_base_r, $fn=10*4);
-        
+        difference() {
+            union() {
+                //wall fixture
+                translate([0, -d / 2, 0])
+                rotate([0, 90, 0])
+                rounded_cube2([l, d, base_th], Lineroller_base_r, $fn=10*4);
+            
+                //rounded support (top)
+                rotate([0, -90, 90])
+                translate([-base_th, 0, -d / 2])
+                inner_round_corner(r=base_th / 3, h=d, $fn=4*10);
           
-        //rounded support (top)
-                  rotate([0, -90, 90])
-        translate([-base_th, 0, -d / 2])
-
-        inner_round_corner(r=base_th / 3, h=d, $fn=4*10);
-          
-        //shelf
-        rotate([0, 0, 90])
-        translate([-d / 2, -base_th, -2 *base_th])
-        rounded_cube2([d, length_shelf + base_th, base_th], Lineroller_base_r, $fn=10*4);
-          
-        //post
-        translate([-length_shelf * 7/12, 0, -base_th])
-        cylinder(d=post_r * 2, h=base_th, $fn=10*4);
-        
-        //rounded support (bottom)
-        translate([0, -d/2, -2 * base_th])
-        rotate([0, 90, 90])
-        inner_round_corner(r=length_shelf / 2, h=d, $fn=4*10);
-      }
+                //shelf
+                rotate([0, 0, 90])
+                translate([-d / 2, -base_th, -2 *base_th])
+                rounded_cube2([d, length_shelf + base_th, base_th], Lineroller_base_r, $fn=10*4);
+                  
+                //post
+                translate([-length_shelf * 7/12, 0, -base_th])
+                cylinder(d=post_r * 2, h=base_th, $fn=10*4);
+                
+                //rounded support (bottom)
+                translate([0, -d/2, -2 * base_th])
+                rotate([0, 90, 90])
+                inner_round_corner(r=length_shelf / 2, h=d, $fn=4*10);   
+            };
+            rotate([0, -90, 0])
+            translate([-l / 2, 0, -base_th])
+            slot_for_countersunk_screw(l);
+        }
   }
 
 }
