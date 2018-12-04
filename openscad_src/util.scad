@@ -411,3 +411,28 @@ module chamfer45(v0, h){
   linear_extrude(height=h, slices=1, convexity=2, scale=[(v0[0]-2*h)/v0[0], (v0[1]-2*h)/v0[1]])
     square(v0, center=true);
 }
+
+module support_rectangle(v, support_width=0.4, lattice_spacing_goal=2) {
+length=v[0];
+width=v[1];
+height=v[2];
+
+num_supports = floor(width / lattice_spacing_goal);
+lattice_spacing = width / num_supports;
+union() {
+  for(i=[0:num_supports]) {
+    if (i > 0) {
+        translate([0, lattice_spacing * i - support_width, 0])
+        cube([height, support_width, length]);
+    }
+    if (i % 2 == 0 && i < num_supports) {
+        translate([0, lattice_spacing * i - support_width, 0])
+        cube([height, lattice_spacing, support_width ]);
+    } else if (i < num_supports) {
+        translate([0, lattice_spacing * i - support_width, length - support_width])
+        cube([height, lattice_spacing, support_width ]);
+    }
+  }
+}
+}
+
