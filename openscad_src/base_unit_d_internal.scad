@@ -17,14 +17,14 @@ extra_bearing_width = 0.3;
 mock_spool_h = Gear_height + Spool_height + 2;
 
 Nema17_depth = 28 + 0.43;
-Nema17_depth_mecha = Nema17_depth + 22;
+Nema17_depth_mecha = 70;
 
 motor_mount_depth = 6;
 
 d_roller_depth = 0;
 d_spool_depth = d_roller_depth + mock_spool_h + b623_vgroove_big_r;
-translate([-200, 100, 0])
-mock_motor();
+//translate([-200, 100, 0])
+//mock_motor();
 module mock_motor() {
     gear_length = mock_spool_h;
     hole_shadow_width = 5;
@@ -126,7 +126,7 @@ module base_unit() {
     union() {
         difference() {
             rounded_cube2([base_w, base_d, base_h], 30);
-            position_spool("A") {
+            position_spool("A") { 
                 vertical_spool();
                 rotate([0, 0, 90])
                 translate([mock_spool_h / 2 + motor_mount_depth, -Spool_outer_radius / 2, -base_h - 0.1])
@@ -145,7 +145,10 @@ module base_unit() {
                     mock_motor();
             }
             translate([D_spool_x, D_spool_y, base_h - d_spool_depth + 0.03])
-                mock_spool(center=false, h=d_spool_depth, axle_length = 100);
+                mock_spool(center=false, h=d_spool_depth, axle_length = 120);
+            translate([D_spool_x + Spool_outer_radius - mock_spool_h + Motor_outer_radius, D_spool_y, d_spool_depth + Gear_height - motor_mount_depth + 2])
+            rotate([0, 90, 0])
+                mock_motor();
             D_anchor(0);
             D_anchor(1);
             D_anchor(2);
