@@ -1,8 +1,6 @@
 include <parameters.scad>
 use <util.scad>
 
-use <motor_bracket_side.scad>
-
 RENDER_BRACKETS = true;
 
 layer_height = 25.4 / 2; //.5 inch
@@ -23,23 +21,38 @@ Nema17_depth_mecha = Nema17_depth + 22;
 
 motor_mount_depth = 6;
 
-d_roller_depth = layer_height;
+d_roller_depth = 0;
 d_spool_depth = d_roller_depth + mock_spool_h + b623_vgroove_big_r;
-
+translate([-200, 100, 0])
+mock_motor();
 module mock_motor() {
-    gear_length = Gear_height + 7;
+    gear_length = mock_spool_h;
+    hole_shadow_width = 5;
+    hole_shadow_length = 10;
+    hole_shadow_depth = 7;
     color("steelblue")
-    translate([-gear_length - 2, -Nema17_cube_width / 2, 0])
+    translate([-gear_length, -Nema17_cube_width / 2, 0])
     union() {
         translate([gear_length, 0, Nema17_cube_width])
         rotate([0, 90, 0])
           rounded_cube2([Nema17_cube_width, Nema17_cube_width, Nema17_depth_mecha], 3);
-        union() {
-            rotate([0, 90, 0])
-            translate([-Nema17_cube_width / 2, Nema17_cube_width / 2, 0])
-              cylinder(r = Motor_outer_radius, h=gear_length + 0.1);
-            translate([gear_length / 2, Nema17_cube_width / 2, Nema17_cube_width / 4])
-              cube([gear_length + 0.1, Motor_outer_radius * 2, Nema17_cube_width / 2], center=true);
+        //gear
+        rotate([0, 90, 0])
+        translate([-Nema17_cube_width / 2, Nema17_cube_width / 2, 0])
+          cylinder(r = Motor_outer_radius, h=gear_length + 0.1);
+        //gear shadow
+        translate([gear_length / 2, Nema17_cube_width / 2, Nema17_cube_width / 4])
+          cube([gear_length + 0.1, Motor_outer_radius * 2, Nema17_cube_width / 2], center=true);
+        //mounting holes
+        rotate([0, 90, 0])
+        translate([-Nema17_cube_width / 2, Nema17_cube_width / 2, gear_length - motor_mount_depth - hole_shadow_depth])
+          union() {
+            Nema17_screw_holes(3.5, motor_mount_depth + hole_shadow_depth, $fs=1);
+            //mounting hole shadow
+            Nema17_screw_translate(4) {
+              translate([0, -hole_shadow_width / 2, 0])
+                cube([hole_shadow_length, hole_shadow_width, hole_shadow_depth]);
+            }
           }
     }
 }
@@ -87,7 +100,7 @@ module position_spool(anchor = "A") {
 
 module D_anchor(anchor = 0) {
     channel_width = b623_width + extra_bearing_width;
-    channel_len = 40;
+    channel_len = 45;
     lineroller_bore = b623_bore_r;
     dist = Spool_outer_radius + 2 - channel_width;
     anchor_angle = anchor * 120;
@@ -98,12 +111,15 @@ module D_anchor(anchor = 0) {
             union() {
                 translate([dist, 0, -d_spool_depth])
                     rounded_cube2([channel_width, channel_len, d_spool_depth], channel_width / 2, $fn=16);
-                translate([dist - channel_width / 2, channel_len - b623_vgroove_big_r, -d_roller_depth - lineroller_bore/2])
+                translate([dist - channel_width / 2, channel_len - b623_vgroove_big_r, -d_roller_depth - lineroller_bore])
                     rotate([0, 90, 0])
-                        cylinder(r=lineroller_bore, h=2 * channel_width);
+                        union() {
+                            cylinder(r=lineroller_bore, h=2 * channel_width, $fn=12);
+                            translate([-lineroller_bore, -lineroller_bore, 0])
+                                cube([lineroller_bore, 2 * lineroller_bore, 2 * channel_width]);
+                        }
        }
 }
-
 translate([-base_w / 2, -base_d / 2, 0])
 base_unit();
 module base_unit() {
