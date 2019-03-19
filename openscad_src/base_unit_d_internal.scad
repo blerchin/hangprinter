@@ -6,9 +6,12 @@ RENDER_BRACKETS = true;
 layer_height = 25.4 / 2; //.5 inch
 $fn = 64;
 
-base_w = 260;
-base_d = 390;
+base_w = 250;
+base_d = 360;
 base_h = 4 * layer_height;
+
+eigth_inch = 1.5875;
+min_tool_radius = eigth_inch + 0.1125;
 
 D_spool_x = base_w / 2;
 D_spool_y = base_d / 2;
@@ -19,7 +22,7 @@ extra_bearing_width = 0.4;
 mock_spool_h = 27.3 + 2;
 
 Nema17_depth = 28 + 0.43;
-Nema17_depth_mecha = 70;
+Nema17_depth_mecha = 75;
 Nema17_ridge_r = 11;
 Nema17_ridge_height = 2;
 
@@ -35,14 +38,12 @@ spool_gear_height = 18.87;
 d_spool_depth = d_roller_depth + mock_spool_h;
 d_spool_depth_round = ceil(d_spool_depth / layer_height) * layer_height;
 
-d_motor_depth = d_spool_depth_round + gear_length - spool_gear_height;
-
 //translate([0, 00, 0])
 //mock_motor(square_gear = false);
 module mock_motor(hole_shadow_depth = 7, gear_shadow = true, square_gear = true) {
-    hole_shadow_width = 5;
+    hole_shadow_width = 3.5;
     hole_shadow_length = 10;
-    cw = Nema17_cube_width + 0.1;
+    cw = Nema17_cube_width;
     gl = gear_length + 5;
     color("steelblue")
     translate([-gl, -cw / 2, -cw / 2])
@@ -58,16 +59,12 @@ module mock_motor(hole_shadow_depth = 7, gear_shadow = true, square_gear = true)
               cube([3 * Motor_outer_radius, 3 * Motor_outer_radius, gl + 1], center=true);
           } else {
             translate([-cw / 2, cw / 2, 0.1])
-              union() {
-                cylinder(r = Motor_outer_radius, h=gl, $fn=64);
-                translate([0, 0, gl - Nema17_ridge_height])
-                    cylinder(r = Nema17_ridge_r, h=Nema17_ridge_height, $fn=64);
-              }
+              cylinder(r = Nema17_ridge_r, h=gl, $fn=64);
           }
         //gear shadow
         if (gear_shadow) {
             translate([gl / 2 + 0.1, cw / 2, cw / 4])
-                cube([gl, Motor_outer_radius * 2, cw / 2], center=true);
+                cube([gl, Nema17_ridge_r * 2, cw / 2], center=true);
         }
         //mounting holes
         rotate([0, 90, 0])
@@ -83,7 +80,7 @@ module mock_motor(hole_shadow_depth = 7, gear_shadow = true, square_gear = true)
     }
 }
 
-module mock_spool(center = true, r=Spool_outer_radius + 2, h=mock_spool_h, drop_in = false, axle_radius = 4, axle_length=2 * Gear_height + Spool_height, rounded = true) {
+module mock_spool(center = true, r=Spool_outer_radius + 2, h=mock_spool_h, drop_in = false, axle_radius = 4.1, axle_length=2 * (Gear_height + Spool_height), rounded = true, bracket_screws = false) {
     union() {
         color("plum")
         if (rounded) {
@@ -94,25 +91,34 @@ module mock_spool(center = true, r=Spool_outer_radius + 2, h=mock_spool_h, drop_
         color("green")
         translate([0, 0, -axle_length / 2])
         union() {
-          cylinder(h=axle_length, r=axle_radius, $fn=4*4);
+          cylinder(h=axle_length, r=axle_radius, $fn=64);
             if (drop_in) { 
               translate([0, axle_radius, axle_length / 2])
                 cube(size=[2*axle_radius, 2*axle_radius, axle_length], center=true);
+            }
+            if (bracket_screws) {
+                translate([-11.5, 0.1, (axle_length - mock_spool_h) / 4 ])
+                  rotate([90, 0, 0])
+                  cylinder(r=eigth_inch, h=layer_height);
+                translate([-11.5, 0.1, mock_spool_h + (3/4) * (axle_length - mock_spool_h) ])
+                  rotate([90, 0, 0])
+                  cylinder(r=eigth_inch, h=layer_height);
+                
             }
         }
     }
         
 }
 
-module vertical_spool(center = true, drop_in = true, r=Spool_outer_radius + 2) {
+module vertical_spool(center = true, drop_in = false, r=Spool_outer_radius + 2) {
     union() {
         rotate([90, 0, 0])
-            mock_spool(center, drop_in = drop_in, r = r, rounded = false);
+            mock_spool(center, drop_in = drop_in, r = r, rounded = false, bracket_screws=true);
     }
 }
 
 module position_spool(anchor = "A") {
-    translate_z = base_h - 1.5;
+    translate_z = base_h;
     if (anchor == "A") {
         translate([30, base_d - 30, translate_z])
             rotate([0, 0, -30])
@@ -129,13 +135,18 @@ module position_spool(anchor = "A") {
 }
 
 module position_motor(r = Spool_outer_radius) {
-    z_pos = base_h - Motor_outer_radius;
+    motor_x_offset = 25;
+    moter_z_offset = 30;
+    z_pos = base_h + 20;
+    if (z_pos > r) {
+        echo("z_pos out of range");
+    }
     x_pos = sqrt(pow(r, 2) - pow(z_pos, 2));
-    translate([-x_pos - Motor_outer_radius, mock_spool_h / 2 - 0.1, -z_pos])
+    translate([-x_pos - motor_x_offset, mock_spool_h / 2 - 0.1, -z_pos])
         children();
 }
 
-module registration_holes(padding = 30, radius = 1.59) {
+module registration_holes(padding = 30, radius = eigth_inch) {
     translate([padding, padding, 0])
         cylinder(r=radius, h=base_h + 10);
     translate([base_w - padding, padding, 0])
@@ -146,25 +157,26 @@ module registration_holes(padding = 30, radius = 1.59) {
 
 module D_anchor(anchor = 0) {
     channel_width = b623_width + extra_bearing_width;
-    channel_len = 45;
-    lineroller_bore = b623_bore_r;
-    dist = Spool_outer_radius + 2 - channel_width / 2;
+    channel_len = 55 + Spool_outer_radius - Spool_r;
+    roller_inset = 2 * b623_vgroove_big_r;
+    lineroller_bore = min_tool_radius;
+    dist = Spool_r + 2 - channel_width / 2;
     anchor_angle = anchor * 120;
     tangent_angle = anchor_angle - atan(channel_len / dist);
-//    dist_offset = tan(tangent_angle)
-    color("plum")
+//  dist_offset = tan(tangent_angle)
+    color("magenta")
     translate([D_spool_x, D_spool_y, base_h + 0.1])
         rotate([0, 0, tangent_angle - 30])
             union() {
-                translate([dist - channel_width / 2, -channel_width / 2, -d_spool_depth_round])
-                    rounded_cube2([channel_width, channel_len, d_spool_depth_round], channel_width / 2, $fn=16);
-                translate([dist - channel_width, channel_len - b623_vgroove_big_r, -d_roller_depth])
+                translate([dist - channel_width / 2, -channel_width / 2, -d_spool_depth_round + 0.01])
+                    rounded_cube2([channel_width, channel_len + roller_inset, d_spool_depth_round], channel_width / 2, $fn=32);
+                translate([dist - 1.5 * channel_width, channel_len, -d_roller_depth])
                     rotate([0, 90, 0])
-                        cylinder(r=lineroller_bore, h=2 * channel_width, $fn=12);
+                        cylinder(r=lineroller_bore, h=3 * channel_width, $fn=32);
        }
 }
-//projection(cut = true)
-//translate([-base_w / 2, -base_d / 2, -2 * layer_height + 0.1])
+projection(cut = true)
+translate([-base_w / 2, -base_d / 2, -1 * layer_height + 0.1])
 base_unit();
 module base_unit() {
     union() {
@@ -174,31 +186,17 @@ module base_unit() {
                 rotate([0, 0, 180])
                 union() {
                     vertical_spool();
-                    position_motor() {
-                        rotate([0, 0, 90])
-                            mock_motor(hole_shadow_depth=0);
-                    }
                 }
             }
             position_spool("B") {
                 vertical_spool();
-                position_motor() {
-                    rotate([0, 0, -90])
-                        translate([gear_length - 1, 0, 0])
-                            mock_motor(hole_shadow_depth=0);
-                }
-
             }
             position_spool("C") {
                 vertical_spool();
-                position_motor() {
-                    rotate([0, 0, 90])
-                        mock_motor(hole_shadow_depth=0);
-                }
             }
             translate([D_spool_x, D_spool_y, base_h - d_spool_depth_round + 0.03])
                 mock_spool(center=false, h=d_spool_depth_round, axle_length = 100);
-            translate([D_spool_x + Spool_outer_radius + Motor_outer_radius, D_spool_y, base_h - d_motor_depth])
+            translate([D_spool_x + Spool_outer_radius + Motor_outer_radius, D_spool_y, -0.1])
             rotate([0, 90, 0])
                 mock_motor(hole_shadow_depth=100, square_gear=false);
             D_anchor(0);
