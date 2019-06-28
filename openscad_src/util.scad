@@ -222,6 +222,23 @@ module rounded_2corner(v, r){
     circle(r=r,$fs = 1);
 }
 
+module Nema23_screw_translate(corners){
+  for (i=[0:90:90*corners - 1]){
+    rotate([0,0,i+45])
+      translate([Nema23_screw_hole_width/2,0,0])
+        rotate([0,0,-i-45])
+          children();
+  }
+}
+
+module Nema23_screw_holes(d, h, corners=4, teardrop=false){
+  Nema23_screw_translate(corners)
+    if(teardrop)
+      teardrop(r=d/2,h=h);
+    else
+      cylinder(r=d/2,h=h);
+}
+
 module Nema17_screw_translate(corners){
   for (i=[0:90:90*corners - 1]){
     rotate([0,0,i+45])
@@ -231,13 +248,28 @@ module Nema17_screw_translate(corners){
   }
 }
 
-module Nema17_screw_holes(d, h, corners=4, teardrop=false){
-  Nema17_screw_translate(corners)
+
+module screw_translate(n, nema23 = false) {
+  if(nema23) {
+    Nema23_screw_translate(n) children();
+  } else {
+    Nema17_screw_translate(n) children();
+  }
+}
+
+module screw_holes(d, h, corners=4, teardrop=false, nema23=false){
+  screw_translate(corners, nema23) {
     if(teardrop)
       teardrop(r=d/2,h=h);
     else
       cylinder(r=d/2,h=h);
+  }
 }
+
+module Nema17_screw_holes(d, h, corners=4, teardrop=false) {
+  screw_holes(d, h, corners, teardrop=false, nema23=false);
+}
+
 
 module centered_u_groove_bearing(){
   translate([1.5,-32,0])

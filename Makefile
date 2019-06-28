@@ -93,6 +93,7 @@ $(STL_NEMA23_DIR)/%.stl: $(SRC_DIR)/extruder_holder.scad \
 	$(SRC_DIR)/gear_util.scad \
 	$(SRC_DIR)/gears.scad \
 	$(SRC_DIR)/motor_gear.scad \
+	$(SRC_DIR)/motor_gear_rev.scad \
 	$(SRC_DIR)/motor_bracket.scad \
 	$(SRC_DIR)/extruder_holder.scad \
 	$(SRC_DIR)/util.scad
@@ -115,6 +116,7 @@ layout_nema23.dxf: $(SRC_DIR)/layout.scad \
     -o $@ $(SRC_DIR)/layout.scad;
 
 nema23: | $(STL_NEMA23_DIR) $(STL_NEMA23_DIR)/motor_gear.stl \
+	$(STL_NEMA23_DIR)/motor_gear_rev.stl \
 	$(STL_NEMA23_DIR)/motor_bracket.stl \
 	$(STL_NEMA23_DIR)/extruder_holder.stl \
 	layout_nema23.dxf

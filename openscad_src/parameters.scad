@@ -17,6 +17,12 @@ Nema17_cube_height         = 39.36;
 Nema17_shaft_height        = 63.65;
 Nema17_ring_height         = 2;
 Nema17_shaft_radius        = 5/2;
+Nema23_cube_width          = 56;
+Nema23_screw_hole_width    = 66.61;
+Nema23_ring_diameter       = 38;
+Nema23_cube_height         = 56;
+Nema23_shaft_radius        = 3.175;
+
 b608_outer_dia = 22.2;
 b608_width = 7.05;
 Gap_between_sandwich_and_plate = 1.5 + Base_th; // 1.5 mm for wiggle

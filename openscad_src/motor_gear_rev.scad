@@ -1,14 +1,14 @@
 include <parameters.scad>
 use <util.scad>
 use <gears.scad>
-
+mirror();
 motor_gear();
 module motor_gear(){
 
   gear_height = Gear_height + 1; //Want extra millimeter to avoid first- and last layer problems.
   foot_height = 7;
   module half(){
-    my_gear(Motor_teeth, gear_height/2+0.1, Circular_pitch, fac=1, slices = 2*gear_height);
+    my_gear(Motor_teeth, gear_height/2+0.1, Circular_pitch, fac=1, slices = 2*gear_height, invert = true);
   }
 
   difference(){
